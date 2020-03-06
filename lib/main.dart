@@ -1,75 +1,94 @@
 import 'package:flutter/material.dart';
+import 'package:hosam_test/view_model.dart';
+import 'package:provider/provider.dart';
 
-void main() {
-  runApp(MyWidget());
+void main(List<String> args) {
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ListViewModel(),
+      child: Home(),
+    ),
+  );
 }
 
-class MyWidget extends StatelessWidget {
+class Home extends StatelessWidget {
+  const Home({Key key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        home: SafeArea(
-      child: MyHome(),
-    ));
+      home: SafeArea(
+        child: Content(),
+      ),
+    );
   }
 }
 
-class MyHome extends StatelessWidget {
+class Content extends StatelessWidget {
+  Content({Key key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
+    final controller = TextEditingController();
     return Scaffold(
-      drawer: myDrawer(),
-      appBar: AppBar(
-        backgroundColor: Colors.cyan,
+      appBar: AppBar(),
+      body: Body(),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () {
+          final model = Provider.of<ListViewModel>(context, listen: false);
+          showDialog(
+            context: context,
+            builder: (_) {
+              return Center(
+                child: Container(
+                  color: Colors.grey,
+                  width: 300,
+                  height: 100,
+                  child: Material(
+                      child: Column(
+                    children: <Widget>[
+                      TextField(
+                        controller: controller,
+                      ),
+                      FlatButton(
+                        onPressed: () {
+                          final model = Provider.of<ListViewModel>(context,
+                              listen: false);
+                          final val = controller.text;
+                          model.additem(val);
+                          Navigator.of(context).pop();
+                        },
+                        child: Text('Done'),
+                      )
+                    ],
+                  )),
+                ),
+              );
+            },
+          );
+        },
       ),
-      backgroundColor: Colors.grey,
-      body: Container(),
     );
   }
+}
 
-  Widget myDrawer() {
-    return Drawer(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          SizedBox(
-            height: 200,
-            child: Stack(
-              fit: StackFit.loose,
-              children: <Widget>[
-                // Container(
-                //   decoration: BoxDecoration(
-                //       image: DecorationImage(
-                //     image: AssetImage("assets/images/background.jpg"),
-                //     fit: BoxFit.cover,
-                //   )),
-                // ),
-                Positioned.fill(
-                  child: Container(
-                    child: Image.asset(
-                      "assets/images/background.jpg",
-                      fit: BoxFit.fill,
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.bottomLeft,
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
-          Text("Main"),
-          Text("About")
-        ],
-      ),
+class Body extends StatelessWidget {
+  const Body({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ListViewModel>(
+      builder: (_, model, __) {
+        return ListView(
+          children: model.strings
+              .map((string) => Text(
+                    string,
+                    style: TextStyle(fontSize: 35),
+                  ))
+              .toList(),
+        );
+      },
     );
   }
 }
